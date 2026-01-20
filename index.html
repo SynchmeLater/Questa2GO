@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Secure Quiz</title>
+  <style>
+    body { font-family: Arial; }
+    #warning { color: red; font-weight: bold; }
+  </style>
+</head>
+
+<body oncontextmenu="return false">
+
+<h2>Secure Quiz</h2>
+<p id="timer"></p>
+<p id="warning"></p>
+
+<form id="quizForm">
+  <p>1) What is 2 + 2?</p>
+  <input type="radio" name="q1" value="3">3<br>
+  <input type="radio" name="q1" value="4">4<br>
+
+  <br>
+  <button type="submit">Submit</button>
+</form>
+
+<script>
+/* ===============================
+   SECURITY VARIABLES
+================================ */
+let violations = 0;
+const MAX_VIOLATIONS = 1;
+const QUIZ_TIME = 60; // seconds
+
+/* ===============================
+   FULLSCREEN ENFORCEMENT
+================================ */
+document.documentElement.requestFullscreen();
+
+/* ===============================
+   TAB SWITCH DETECTION
+================================ */
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) violation("Tab switching detected");
+});
+
+/* ===============================
+   EXIT FULLSCREEN DETECTION
+================================ */
+document.addEventListener("fullscreenchange", () => {
+  if (!document.fullscreenElement) violation("Exited fullscreen");
+});
+
+/* ===============================
+   COPY / PASTE BLOCK
+================================ */
+document.addEventListener("copy", e => e.preventDefault());
+document.addEventListener("paste", e => e.preventDefault());
+
+/* ===============================
+   PAGE RELOAD BLOCK
+================================ */
+window.onbeforeunload = () => "Leaving will submit the quiz";
+
+/* ===============================
+   VIOLATION HANDLER
+================================ */
+function violation(reason) {
+  violations++;
+  document.getElementById("warning").innerText =
+    reason + " | Violations: " + violations;
+
+  if (violations > MAX_VIOLATIONS) {
+    alert("Quiz submitted due to violation.");
+    document.getElementById("quizForm").submit();
+  }
+}
+
+/* ===============================
+   TIMER
+================================ */
+let timeLeft = QUIZ_TIME;
+const timer = setInterval(() => {
+  document.getElementById("timer").innerText =
+    "Time left: " + timeLeft + "s";
+  timeLeft--;
+
+  if (timeLeft < 0) {
+    clearInterval(timer);
+    alert("Time up! Quiz submitted.");
+    document.getElementById("quizForm").submit();
+  }
+}, 1000);
+</script>
+
+</body>
+</html>
